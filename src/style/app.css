@@ -1,0 +1,72 @@
+.datePickerUI {
+  position: absolute;
+  z-index: 100000;
+  border: 1px solid #b4b4b4;
+  font-size: 12px;
+  line-height: 1em;
+  &__wrap {
+    display: inline-block;
+    vertical-align: top;
+  }
+  &__control {
+    overflow: hidden;
+    background-color: #fff;
+  }
+  &__this-month {
+    text-align: center;
+  }
+  &__prev,
+  &__next {
+    display: inline-block;
+    vertical-align: middle;
+    text-align: center;
+    width: 20px;
+    background-color: #fff;
+    cursor: pointer;
+    &:hover {
+      background-color: #eee;
+    }
+  }
+  &__days,
+  &__dates {
+    overflow: hidden;
+  }
+  &__days {
+    display: table;
+    width: 100%;
+    padding-top: 3px;
+    padding-bottom: 3px;
+    background-color: #fff;
+    color: #aaa;
+  }
+  &__day,
+  &__date {
+    display: table-cell;
+    vertical-align: middle;
+    width: 20px;
+    padding: 8px 4px;
+    text-align: center;
+  }
+  &__date {
+    color: #aaa;
+    &--state_enabled {
+      color: #000;
+      cursor: pointer;
+      &:hover {
+        background-color: #eee;
+      }
+    }
+  }
+  &__close {
+    background-color: #fff;
+    text-align: center;
+    cursor: pointer;
+    &:hover {
+      background-color: #eee;
+    }
+  }
+}
+
+.datePicker[type="text"] {
+  width: 200px;
+}
