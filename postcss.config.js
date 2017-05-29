@@ -1,6 +1,5 @@
-module.exports = (ctx) => ({
-  map: ctx.options.map,
-  plugins: [
-    require('postcss-nesting'),
-  ]
-});
+module.exports = {
+    plugins: [
+        require('postcss-nested')
+    ]
+}
