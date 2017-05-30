@@ -87,8 +87,8 @@ if(content.locals) module.exports = content.locals;
 if(false) {
 	// When the styles change, update the <style> tags
 	if(!content.locals) {
-		module.hot.accept("!!../../node_modules/css-loader/index.js!../../node_modules/postcss-loader/lib/index.js??ref--1-2!./app.css", function() {
-			var newContent = require("!!../../node_modules/css-loader/index.js!../../node_modules/postcss-loader/lib/index.js??ref--1-2!./app.css");
+		module.hot.accept("!!../../node_modules/css-loader/index.js!../../node_modules/postcss-loader/lib/index.js!./app.css", function() {
+			var newContent = require("!!../../node_modules/css-loader/index.js!../../node_modules/postcss-loader/lib/index.js!./app.css");
 			if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
 			update(newContent);
 		});
@@ -169,7 +169,8 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
       idPrefix: 'datePicker-',
       mouseover: false,
       numberOfMonths: 2,
-      DayText: false
+      DayText: false,
+      gholiday: true
     }, options);
 
     /*
@@ -179,13 +180,33 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
       return ('0' + num).slice(-2);
     };
 
+    function Holiday(yy, mm) {
+      var holidayArray = [];
+      var xhr = new XMLHttpRequest();
+      xhr.onreadystatechange = function () {
+        if (xhr.readyState === 4) {
+          if (xhr.status === 200) {
+            // console.log(JSON.parse(this.responseText))
+            holidayArray.push(JSON.parse(this.responseText));
+          } else {
+            // console.log('Failed')
+          }
+        }
+      };
+      xhr.onload = function () {
+        // console.log(holidayArray)
+      };
+      xhr.open('GET', 'getholiday.php', true);
+      xhr.send(null);
+      return holidayArray;
+    }
+
     function fillDates(flag, i, w, daySearch, flagHoliday, currentYMD) {
-      // 指定日を非活性にする 未実装
-      if (settings.holidayweek) {
-        var week = settings.holidayweek.split(',');
-        for (var n = 0; n < week.length; n++) {
-          if (week[n] === w) {
-            // 曜日指定
+      // 指定曜日を非活性にする
+      if (settings.disabledDays) {
+        var week = settings.disabledDays.split(',');
+        for (var p = 0; p < week.length; p++) {
+          if (Number(week[p]) === w) {
             flag = false;
           }
         }
@@ -209,19 +230,12 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
         holidayClass = ' national-holiday';
       }
 
-      // 祝日名表示 未実装
-      var dayStr = '';
-      if (settings.DayText) {
-        var dayStr = '<span class="set-text">' + flagHoliday + '</span>';
-      }
-
       if (flag) {
         // 有効日
-        // dayStr、あってもいいけど描画の仕方を考える
-        return '<td title="' + flagHoliday + '" class="datePickerUI__date datePickerUI__date--state_enabled' + holidayClass + '" data-ymd="' + currentYMD + '">' + i + '' + dayStr + '</td>';
+        return '<td class="datePickerUI__date datePickerUI__date--state_enabled' + holidayClass + '" data-ymd="' + currentYMD + '" data-holiday-title="' + flagHoliday + '">' + i + '</td>';
       } else {
         // 無効日
-        return '<td class="datePickerUI__date' + holidayClass + '">' + i + '' + dayStr + '</td>';
+        return '<td class="datePickerUI__date' + holidayClass + '" data-holiday-title="' + flagHoliday + '">' + i + '</td>';
       }
     }
 
@@ -229,6 +243,10 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
      * Calendar elements
      */
     function generateCalendar(yy, mm, top, left, id) {
+      if (settings.gholiday) {
+        console.log(Holiday(yy, mm));
+      }
+
       var week = settings.week;
       var close = settings.close;
       var calendarEl = '<div class="datePickerUI">';
@@ -311,13 +329,13 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
           var currentYMD = '' + currentYear + ('' + zeroPadding(currentMonth)) + ('' + zeroPadding(currentDates));
 
           // 選択不可日
-          if (settings.disabledDays) {
-            var disabledDays = settings.disabledDays;
-            Object.keys(disabledDays).map(function (key) {
-              return disabledDays[key];
+          if (settings.disabledDates) {
+            var disabledDates = settings.disabledDates;
+            Object.keys(disabledDates).map(function (key) {
+              return disabledDates[key];
             });
-            disabledDays = Object.values(disabledDays);
-            var search = disabledDays.indexOf(currentYMD);
+            disabledDates = Object.values(disabledDates);
+            var search = disabledDates.indexOf(currentYMD);
             if (search !== -1) {
               daySearch = true;
             }
@@ -509,16 +527,6 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
     }, false);
   };
 })(typeof global !== 'undefined' ? global : window);
-
-/*
- * Set options and run
- */
-var datePicker = window.datePicker({
-  week: ['日', '月', '火', '水', '木', '金', '土'],
-  format: 'yy/mm/dd',
-  close: '閉じる',
-  mouseover: true,
-  minDate: 'today' });
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1)))
 
 /***/ }),
@@ -530,7 +538,7 @@ exports = module.exports = __webpack_require__(4)(undefined);
 
 
 // module
-exports.push([module.i, ".datePickerUI {\n  position: absolute;\n  z-index: 100000;\n  border: 1px solid #b4b4b4;\n  font-size: 12px;\n  line-height: 1em;\n  &__wrap {\n    display: inline-block;\n    vertical-align: top;\n  }\n  &__control {\n    overflow: hidden;\n    background-color: #fff;\n  }\n  &__this-month {\n    text-align: center;\n  }\n  &__prev,\n  &__next {\n    display: inline-block;\n    vertical-align: middle;\n    text-align: center;\n    width: 20px;\n    background-color: #fff;\n    cursor: pointer\n  }\n  &__prev:hover, &__next:hover {\n    background-color: #eee;\n  }\n  &__days,\n  &__dates {\n    overflow: hidden;\n  }\n  &__days {\n    display: table;\n    width: 100%;\n    padding-top: 3px;\n    padding-bottom: 3px;\n    background-color: #fff;\n    color: #aaa;\n  }\n  &__day,\n  &__date {\n    display: table-cell;\n    vertical-align: middle;\n    width: 20px;\n    padding: 8px 4px;\n    text-align: center;\n  }\n  &__date {\n    color: #aaa;\n    &\\--state_enabled {\n      color: #000;\n      cursor: pointer\n    }\n    &\\--state_enabled:hover {\n      background-color: #eee;\n    }\n  }\n  &__close {\n    background-color: #fff;\n    text-align: center;\n    cursor: pointer\n  }\n  &__close:hover {\n    background-color: #eee;\n  }\n}\n\n.datePicker[type=\"text\"] {\n  width: 200px;\n}\n", ""]);
+exports.push([module.i, ".datePickerUI {\n  position: absolute;\n  z-index: 100000;\n  border: 1px solid #b4b4b4;\n  font-size: 12px;\n  line-height: 1em;\n}\n  .datePickerUI__wrap {\n    display: inline-block;\n    vertical-align: top;\n  }\n  .datePickerUI__control {\n    overflow: hidden;\n    background-color: #fff;\n  }\n  .datePickerUI__this-month {\n    text-align: center;\n  }\n  .datePickerUI__prev,\n  .datePickerUI__next {\n    display: inline-block;\n    vertical-align: middle;\n    text-align: center;\n    width: 20px;\n    background-color: #fff;\n    cursor: pointer;\n  }\n  .datePickerUI__prev:hover, .datePickerUI__next:hover {\n      background-color: #eee;\n    }\n  .datePickerUI__days,\n  .datePickerUI__dates {\n    overflow: hidden;\n  }\n  .datePickerUI__days {\n    display: table;\n    width: 100%;\n    padding-top: 3px;\n    padding-bottom: 3px;\n    background-color: #fff;\n    color: #aaa;\n  }\n  .datePickerUI__day,\n  .datePickerUI__date {\n    display: table-cell;\n    vertical-align: middle;\n    width: 20px;\n    padding: 8px 4px;\n    text-align: center;\n  }\n  .datePickerUI__date {\n    color: #aaa;\n  }\n  .datePickerUI__date--state_enabled {\n      color: #000;\n      cursor: pointer;\n    }\n  .datePickerUI__date--state_enabled:hover {\n        background-color: #eee;\n      }\n  .datePickerUI__close {\n    background-color: #fff;\n    text-align: center;\n    cursor: pointer;\n  }\n  .datePickerUI__close:hover {\n      background-color: #eee;\n    }\n\n.datePicker[type=\"text\"] {\n  width: 200px;\n}\n", ""]);
 
 // exports
 

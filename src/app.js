@@ -30,7 +30,8 @@ import styles from './style/app.css'
       idPrefix: 'datePicker-',
       mouseover: false,
       numberOfMonths: 2,
-      DayText: false
+      DayText: false,
+      gholiday: true
     }, options)
 
     /*
@@ -40,12 +41,33 @@ import styles from './style/app.css'
       return ('0' + num).slice(-2)
     }
 
+    function Holiday(yy, mm) {
+      let holidayArray = []
+      const xhr = new XMLHttpRequest()
+      xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4) {
+          if (xhr.status === 200) {
+            // console.log(JSON.parse(this.responseText))
+            holidayArray.push(JSON.parse(this.responseText))
+          } else {
+            // console.log('Failed')
+          }
+        }
+      }
+      xhr.onload = function() {
+        // console.log(holidayArray)
+      }
+      xhr.open('GET', 'getholiday.php', true)
+      xhr.send(null)
+      return holidayArray
+    }
+
     function fillDates(flag, i, w, daySearch, flagHoliday, currentYMD) {
-      // 指定日を非活性にする 未実装
-      if(settings.holidayweek) {
-        var week = settings.holidayweek.split(',')
-        for(var n = 0; n < week.length; n++) {
-          if(week[n] === w) { // 曜日指定
+      // 指定曜日を非活性にする
+      if(settings.disabledDays) {
+        const week = settings.disabledDays.split(',')
+        for(let p = 0; p < week.length; p++) {
+          if(Number(week[p]) === w) {
             flag = false
           }
         }
@@ -69,17 +91,10 @@ import styles from './style/app.css'
         holidayClass  = ' national-holiday'
       }
 
-      // 祝日名表示 未実装
-      var dayStr = ''
-      if(settings.DayText) {
-        var dayStr = '<span class="set-text">' + flagHoliday + '</span>'
-      }
-
       if(flag) { // 有効日
-        // dayStr、あってもいいけど描画の仕方を考える
-        return '<td title="' + flagHoliday + '" class="datePickerUI__date datePickerUI__date--state_enabled' + holidayClass + '" data-ymd="' + currentYMD + '">' + i + '' + dayStr + '</td>'
+        return '<td class="datePickerUI__date datePickerUI__date--state_enabled' + holidayClass + '" data-ymd="' + currentYMD + '" data-holiday-title="' + flagHoliday + '">' + i + '</td>'
       } else { // 無効日
-        return '<td class="datePickerUI__date' + holidayClass + '">' + i + '' + dayStr + '</td>'
+        return '<td class="datePickerUI__date' + holidayClass + '" data-holiday-title="' + flagHoliday + '">' + i + '</td>'
       }
     }
 
@@ -87,6 +102,10 @@ import styles from './style/app.css'
      * Calendar elements
      */
     function generateCalendar(yy, mm, top, left, id) {
+      if(settings.gholiday) {
+        console.log(Holiday(yy, mm))
+      }
+
       var week = settings.week
       var close = settings.close
       var calendarEl = '<div class="datePickerUI">'
@@ -165,13 +184,13 @@ import styles from './style/app.css'
           var currentYMD = ('' + currentYear) + ('' + zeroPadding(currentMonth)) + ('' + zeroPadding(currentDates))
 
           // 選択不可日
-          if(settings.disabledDays) {
-            var disabledDays = settings.disabledDays
-            Object.keys(disabledDays).map(function(key) {
-              return disabledDays[key]
+          if(settings.disabledDates) {
+            var disabledDates = settings.disabledDates
+            Object.keys(disabledDates).map(function(key) {
+              return disabledDates[key]
             })
-            disabledDays = Object.values(disabledDays)
-            var search = disabledDays.indexOf(currentYMD)
+            disabledDates = Object.values(disabledDates)
+            var search = disabledDates.indexOf(currentYMD)
             if(search !== -1) {
               daySearch = true
             }
@@ -361,18 +380,3 @@ import styles from './style/app.css'
     }, false)
   }
 })(typeof global !== 'undefined' ? global : window)
-
-/*
- * Set options and run
- */
-var datePicker = window.datePicker({
-  week: ['日', '月', '火', '水', '木', '金', '土'],
-  format: 'yy/mm/dd',
-  close: '閉じる',
-  mouseover: true,
-  minDate: 'today', // Or 'YYYY-MM-DD'
-  // maxDate: '2017-06-17',
-  // DayText: true,
-  // holidayweek: '0, 6',
-  // disabledDays: ['20170531','20170615','20170609']
-})
