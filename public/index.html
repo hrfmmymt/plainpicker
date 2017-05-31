@@ -14,16 +14,19 @@
     /*
      * Set options and run
      */
+    // var aha = new Date((new Date().getTime() + 11 * 60 * 60 * 1000)).getTime();
     var datePicker = new datePicker({
       week: ['日', '月', '火', '水', '木', '金', '土'],
       format: 'yy/mm/dd',
       close: '閉じる',
       mouseover: true,
-      minDate: 'today', // Or 'YYYY-MM-DD'
+      // minDate: 'today', // Or 'YYYY-MM-DD'
+      minDate: new Date((new Date().getTime() + 11 * 60 * 60 * 1000)).getTime(),
+      // minDate: '2017-06-17',
       // maxDate: '2017-06-17',
       DayText: true,
-      disabledDays: '0, 6',
-      disabledDates: ['20170531','20170615','20170609']
+      // disabledDays: '0, 6',
+      // disabledDates: ['20170531','20170615','20170609']
     })
     </script>
   </body>

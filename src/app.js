@@ -31,7 +31,7 @@ import styles from './style/app.css'
       mouseover: false,
       numberOfMonths: 2,
       DayText: false,
-      gholiday: true
+      gholiday: false
     }, options)
 
     /*
@@ -121,9 +121,17 @@ import styles from './style/app.css'
           var date = now.getDate()
 
           minDate = new Date(year, month -1, date)
+          // console.log('minDate',minDate)
         } else {
-          var minDateArr = settings.minDate.split('-')
-          minDate = new Date(minDateArr[0], minDateArr[1] -1, minDateArr[2])
+          // const aha = new Date(settings.minDate.getTime())
+          const aha = new Date(settings.minDate)
+          console.log(aha)
+          // var aha = new Date((new Date().getTime() + 11 * 60 * 60 * 1000))
+          // var minDateArr = settings.minDate.split('-')
+          // minDate = new Date(minDateArr[0], minDateArr[1] -1, minDateArr[2])
+          minDate = aha
+
+          console.log('minDate',minDate)
         }
       }
 
@@ -138,7 +146,6 @@ import styles from './style/app.css'
         var currentMonth  = currentDate.getMonth() +1
 
         var numBlankDays = currentDate.getDay()|0
-        // var lastDayOfCurrentMonth = new Date(yy, mm, 0).getDate()|0
         var lastDayOfCurrentMonth = new Date(yy, currentMonth, 0).getDate()|0
 
         var numWeeks = 1
