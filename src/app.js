@@ -261,7 +261,9 @@ import styles from './style/app.css'
      * Open calendar
      */
     document.addEventListener('click', function(event) {
-      if(event.target.classList.contains('datePicker')) {
+      const targetClassName = event.target.className
+
+      if((' ' + targetClassName + ' ').replace(/[\n\t]/g, ' ').indexOf(' datePicker ') !== -1) {
         removeCalendar()
         var date = new Date()
         var yy = date.getFullYear()
@@ -273,6 +275,8 @@ import styles from './style/app.css'
 
         generateCalendar(yy, mm, top, left, id)
       }
+
+      if(targetClassName.indexOf('datePicker') < 0) removeCalendar()
     }, false)
 
     /*
