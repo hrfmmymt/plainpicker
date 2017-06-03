@@ -92,9 +92,34 @@ import styles from './style/app.css'
       }
 
       if(flag) { // 有効日
-        return '<td class="datePickerUI__date datePickerUI__date--state_enabled' + holidayClass + '" data-ymd="' + currentYMD + '" data-holiday-title="' + flagHoliday + '">' + i + '</td>'
+        return '<td class="datePickerUI__date datePickerUI__date--state_enabled' + holidayClass + '" data-ymd="' + currentYMD + '" data-holiday-title="' + flagHoliday + '" tabindex="-1">' + i + '</td>'
       } else { // 無効日
-        return '<td class="datePickerUI__date' + holidayClass + '" data-holiday-title="' + flagHoliday + '">' + i + '</td>'
+        return '<td class="datePickerUI__date' + holidayClass + '" data-holiday-title="' + flagHoliday + '" tabindex="-1">' + i + '</td>'
+      }
+    }
+
+    function getMinDate() {
+      var minDate = null
+
+      if(settings.minDate) {
+        if(settings.minDate === 'today') {
+          var now = new Date()
+          var year = now.getFullYear()
+          var month = now.getMonth() +1
+          var date = now.getDate()
+
+          minDate = new Date(year, month -1, date).getTime()
+        } else {
+          // const aha = new Date(settings.minDate.getTime())
+          const aha = new Date(settings.minDate)
+          console.log(aha)
+          // var aha = new Date((new Date().getTime() + 11 * 60 * 60 * 1000))
+          // var minDateArr = settings.minDate.split('-')
+          // minDate = new Date(minDateArr[0], minDateArr[1] -1, minDateArr[2])
+          minDate = aha
+        }
+
+        return minDate
       }
     }
 
@@ -108,32 +133,11 @@ import styles from './style/app.css'
 
       var week = settings.week
       var close = settings.close
-      var calendarEl = '<div class="datePickerUI">'
+      let calendarEl = '<div class="datePickerUI">'
 
-      var minDate = null
-      var maxDate = null
+      const minDate = getMinDate()
 
-      if(settings.minDate) {
-        if(settings.minDate === 'today') {
-          var now = new Date()
-          var year = now.getFullYear()
-          var month = now.getMonth() +1
-          var date = now.getDate()
-
-          minDate = new Date(year, month -1, date)
-          // console.log('minDate',minDate)
-        } else {
-          // const aha = new Date(settings.minDate.getTime())
-          const aha = new Date(settings.minDate)
-          console.log(aha)
-          // var aha = new Date((new Date().getTime() + 11 * 60 * 60 * 1000))
-          // var minDateArr = settings.minDate.split('-')
-          // minDate = new Date(minDateArr[0], minDateArr[1] -1, minDateArr[2])
-          minDate = aha
-
-          console.log('minDate',minDate)
-        }
-      }
+      let maxDate = null
 
       if(settings.maxDate) {
         var maxDateArr = settings.maxDate.split('-')
@@ -205,13 +209,13 @@ import styles from './style/app.css'
 
           // 開始日と終了日がどちらも有効
           if( minDate !== null && maxDate !== null ) {
-            if( currentDateAll.getTime() >= minDate.getTime() && currentDateAll.getTime() <= maxDate.getTime() ) {
+            if( currentDateAll.getTime() >= minDate && currentDateAll.getTime() <= maxDate.getTime() ) {
               calendarEl += fillDates(true, i, numToWeeks, daySearch, flagHoliday, currentYMD)
             } else {
               calendarEl += fillDates(false, i, numToWeeks, daySearch, flagHoliday, currentYMD)
             }
           } else if( minDate !== null && maxDate === null ) { // 開始日だけ有効
-            if(currentDateAll.getTime() >= minDate.getTime()) {
+            if(currentDateAll.getTime() >= minDate) {
               calendarEl += fillDates(true, i, numToWeeks, daySearch, flagHoliday, currentYMD)
             } else {
               calendarEl += fillDates(false, i, numToWeeks, daySearch, flagHoliday, currentYMD)
@@ -263,18 +267,27 @@ import styles from './style/app.css'
     document.addEventListener('click', function(event) {
       const targetClassName = event.target.className
 
+      const date = new Date()
+      const yy = date.getFullYear()
+      const mm = date.getMonth() +1
+      const dd = date.getDate()
+
       if((' ' + targetClassName + ' ').replace(/[\n\t]/g, ' ').indexOf(' datePicker ') !== -1) {
         removeCalendar()
-        var date = new Date()
-        var yy = date.getFullYear()
-        var mm = date.getMonth() +1
-
         var top = Math.ceil(event.target.offsetTop) +20
         var left = Math.ceil(event.target.offsetLeft)
         var id = event.target.id
 
         generateCalendar(yy, mm, top, left, id)
       }
+
+      // set focus
+      const minDate = new Date(getMinDate())
+      const minYYYYMMDD = ('' + minDate.getFullYear()) + ('' + zeroPadding(minDate.getMonth() +1)) + ('' + zeroPadding(minDate.getDate()))
+      Array.prototype.slice.call(document.querySelectorAll('[data-ymd~="'+ minYYYYMMDD +'"]'), 0).forEach(function(node) {
+        node.setAttribute('tabindex', '0')
+        node.focus()
+      })
 
       if(targetClassName.indexOf('datePicker') < 0) removeCalendar()
     }, false)
